@@ -1,11 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.primerproyectobatallanaval.VentanaInicioController">
-    
+
+<AnchorPane id="AnchorPane" prefHeight="920.0" prefWidth="1865.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/23.0.1" fx:controller="com.mycompany.primerproyectobatallanaval.VentanaInicioController">
+   <children>
+      <ImageView fitHeight="920.0" fitWidth="1865.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../../Imagenes/fondo2.jpg" />
+         </image>
+      </ImageView>
+      <Label layoutX="186.0" layoutY="139.0" text="BATALLA NAVAL" textFill="#a40a0a">
+         <font>
+            <Font name="Arial Black" size="62.0" />
+         </font>
+      </Label>
+      <Button fx:id="ButtonJugar" layoutX="432.0" layoutY="314.0" mnemonicParsing="false" onAction="#OnJugarPrecionado" text="JUGAR">
+         <font>
+            <Font name="Arial Black" size="24.0" />
+         </font>
+      </Button>
+      <Button fx:id="ButtonAcarcaDe" layoutX="375.0" layoutY="415.0" mnemonicParsing="false" onAction="#OnAcercaDePrecionado" text="ACERCA DE">
+         <font>
+            <Font name="Arial Black" size="28.0" />
+         </font>
+      </Button>
+      <Button fx:id="ButtonSalir" layoutX="424.0" layoutY="532.0" mnemonicParsing="false" onAction="#OnSalirPrecionado" text="SALIR">
+         <font>
+            <Font name="Arial Black" size="29.0" />
+         </font>
+      </Button>
+   </children>
 </AnchorPane>
