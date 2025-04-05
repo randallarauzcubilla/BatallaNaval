@@ -64,22 +64,22 @@ public class Tablero {
 
     public String atacarCasilla(int fila, int columna) {
         if (casillasAtacadas[fila][columna]) {
-            return "Ya atacaste esta casilla."; // Evita ataques repetidos
+            return "Ya atacaste esta casilla, intenta en otra.";
         }
-        casillasAtacadas[fila][columna] = true;
+        casillasAtacadas[fila][columna] = true; // Marcar la casilla como atacada
         for (Barco barco : barcos) {
             for (int i = 0; i < barco.getTamaño(); i++) {
                 int[] posicion = barco.getPosiciones()[i];
                 if (posicion[0] == fila && posicion[1] == columna) {
                     barco.marcarParteTocada(i);
                     if (barco.estaHundido()) {
-                        return "¡Hundido!"; // Barco completamente destruido
+                        return "¡Hundido!";
                     }
-                    return "¡Averiado!"; // Parte del barco dañada
+                    return "¡Averiado!";
                 }
             }
         }
-        return "¡AGUA!"; // Casilla vacía
+        return "¡AGUA!";
     }
 
     public GridPane getGridPane() {
@@ -111,8 +111,8 @@ public class Tablero {
         barcos.clear(); // Vaciar la lista de barcos
         for (int fila = 0; fila < 10; fila++) {
             for (int columna = 0; columna < 10; columna++) {
-                casillasOcupadas[fila][columna] = false; // Reiniciar las casillas ocupadas
-                casillasAtacadas[fila][columna] = false; // Reiniciar las casillas atacadas
+                casillasOcupadas[fila][columna] = false;
+                casillasAtacadas[fila][columna] = false;
             }
         }
     }
