@@ -2,6 +2,10 @@ package com.mycompany.primerproyectobatallanaval;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -15,8 +19,14 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.image.ImageView;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -34,8 +44,6 @@ public class VentanaJuegoController implements Initializable {
     @FXML
     private Button btnOrdenAleatorio;
     @FXML
-    private Button btnOrientacion;
-    @FXML
     private Button btnDeshacerTablero;
     @FXML
     private Button btnRevelarBarcos;
@@ -46,27 +54,27 @@ public class VentanaJuegoController implements Initializable {
     @FXML
     private Label IdTiempoTurno;
     @FXML
-    private ImageView idBarcoSubmarino1;
+    private Rectangle idBarcoSubmarino1;
     @FXML
-    private ImageView idBarcoSubmarino2;
+    private Rectangle idBarcoSubmarino2;
     @FXML
-    private ImageView idBarcoSubmarino3;
+    private Rectangle idBarcoSubmarino3;
     @FXML
-    private ImageView idBarcoSubmarino4;
+    private Rectangle idBarcoSubmarino4;
     @FXML
     private Button btnVolverNiveles;
     @FXML
-    private ImageView idBarcoAcorazado;
+    private Rectangle idBarcoAcorazado;
     @FXML
-    private ImageView idBarcoCrucero1;
+    private Rectangle idBarcoCrucero1;
     @FXML
-    private ImageView idBarcoCrucero2;
+    private Rectangle idBarcoCrucero2;
     @FXML
-    private ImageView idBarcoDestructor1;
+    private Rectangle idBarcoDestructor1;
     @FXML
-    private ImageView idBarcoDestructor3;
+    private Rectangle idBarcoDestructor3;
     @FXML
-    private ImageView idBarcoDestructor2;
+    private Rectangle idBarcoDestructor2;
     @FXML
     private Button btnComenzarBatalla;
     @FXML
@@ -77,13 +85,21 @@ public class VentanaJuegoController implements Initializable {
     private Label txtBarcoAcorazado;
     @FXML
     private Label txtBarcosDestructores;
+    private List<Rectangle> listaBarcosIniciales = new ArrayList<>();
+    private List<Rectangle> barcosColocados = new ArrayList<>();
 
-    private Tablero tableroComputadora; // Declarar el tablero de la computadora
+    private Tablero tableroComputadora;
     private Tablero tableroJugador;
     private Button[][] botonesComputadora = new Button[10][10];
     private Button[][] botonesJugador = new Button[10][10];
     @FXML
     private Label IdMensajeUsuario;
+    @FXML
+    private ToggleButton btnVertical;
+    @FXML
+    private ToggleButton btnHorizontal;
+    private boolean orientacionHorizontal = true;
+    private final Map<Rectangle, Integer> mapaBarcos = new HashMap<>();
 
     /**
      * Initializes the controller class.
@@ -130,6 +146,50 @@ public class VentanaJuegoController implements Initializable {
                 gridPaneJugador.add(boton, columna, fila);
             }
         }
+        mapaBarcos.put(idBarcoSubmarino1, 1);
+        mapaBarcos.put(idBarcoSubmarino2, 1);
+        mapaBarcos.put(idBarcoSubmarino3, 1);
+        mapaBarcos.put(idBarcoSubmarino4, 1);
+        mapaBarcos.put(idBarcoDestructor1, 2);
+        mapaBarcos.put(idBarcoDestructor2, 2);
+        mapaBarcos.put(idBarcoDestructor3, 2);
+        mapaBarcos.put(idBarcoCrucero1, 3);
+        mapaBarcos.put(idBarcoCrucero2, 3);
+        mapaBarcos.put(idBarcoAcorazado, 4);
+
+        configurarArrastre(idBarcoSubmarino1, 1);
+        configurarArrastre(idBarcoSubmarino2, 1);
+        configurarArrastre(idBarcoSubmarino3, 1);
+        configurarArrastre(idBarcoSubmarino4, 1);
+        configurarArrastre(idBarcoDestructor1, 2);
+        configurarArrastre(idBarcoDestructor2, 2);
+        configurarArrastre(idBarcoDestructor3, 2);
+        configurarArrastre(idBarcoCrucero1, 3);
+        configurarArrastre(idBarcoCrucero2, 3);
+        configurarArrastre(idBarcoAcorazado, 4);
+
+        ToggleGroup grupoOrientacion = new ToggleGroup();
+        btnHorizontal.setToggleGroup(grupoOrientacion);
+        btnVertical.setToggleGroup(grupoOrientacion);
+
+        btnHorizontal.setSelected(true);
+        configurarTablero();
+
+        grupoOrientacion.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == btnHorizontal) {
+                orientacionHorizontal = true;
+            } else if (newVal == btnVertical) {
+                orientacionHorizontal = false;
+            }
+        });
+
+        listaBarcosIniciales.addAll(List.of(
+                idBarcoSubmarino1, idBarcoSubmarino2, idBarcoSubmarino3, idBarcoSubmarino4,
+                idBarcoDestructor1, idBarcoDestructor2, idBarcoDestructor3,
+                idBarcoCrucero1, idBarcoCrucero2,
+                idBarcoAcorazado
+        ));
+
         btnRevelarBarcos.setVisible(false);
         btnTerminarJuego.setVisible(false);
         IdTiempoTurno.setVisible(false);
@@ -138,8 +198,14 @@ public class VentanaJuegoController implements Initializable {
 
     @FXML
     private void ordenarBarcosAleatoriamente(ActionEvent event) {
+        System.out.println("Colocando barcos aleatoriamente en el tablero del jugador...");
 
         tableroJugador.limpiarTablero();
+        for (int fila = 0; fila < 10; fila++) {
+            for (int columna = 0; columna < 10; columna++) {
+                botonesJugador[fila][columna].setStyle("-fx-background-color: lightblue;");
+            }
+        }
 
         int submarinosColocados = 0;
         int destructoresColocados = 0;
@@ -170,7 +236,14 @@ public class VentanaJuegoController implements Initializable {
 
             if (barco != null) {
                 colocado = tableroJugador.colocarBarco(barco, fila, columna, horizontal);
-                if (!colocado) {
+                if (colocado) {
+                    String color = obtenerColorPorTamaño(barco.getTamaño());
+                    for (int i = 0; i < barco.getTamaño(); i++) {
+                        int filaActual = horizontal ? fila : fila + i;
+                        int columnaActual = horizontal ? columna + i : columna;
+                        botonesJugador[filaActual][columnaActual].setStyle("-fx-background-color: " + color + ";");
+                    }
+                } else {
                     switch (barco.getTamaño()) {
                         case 1:
                             submarinosColocados--;
@@ -193,30 +266,30 @@ public class VentanaJuegoController implements Initializable {
 
         System.out.println("Barcos colocados en el tablero del jugador:");
         tableroJugador.imprimirBarcos(); // Depuración
-        mostrarBarcosColocadosJugador(); // Muestra visualmente los barcos en el tablero
         IdMensajeUsuario.setText("¡Tus barcos han sido colocados de forma aleatoria!");
-    }
-
-    @FXML
-    private void OnButtonAlternarOrientacion(ActionEvent event) {
     }
 
     @FXML
     private void OnButtonDeshacerColocacion(ActionEvent event) {
         System.out.println("Deshaciendo la colocación de los barcos...");
-
-        // Limpiar la lógica del tablero
-        tableroJugador.limpiarTablero(); // Elimina todos los barcos y reinicia las casillas ocupadas
-
-        // Actualizar la visualización del tablero
+        tableroJugador.limpiarTablero();
         for (int fila = 0; fila < 10; fila++) {
             for (int columna = 0; columna < 10; columna++) {
-                Button boton = botonesJugador[fila][columna];
-                boton.setStyle("-fx-background-color: lightblue;"); // Restaurar estilo base
+                botonesJugador[fila][columna].setStyle("-fx-background-color: lightblue;"); // Restaurar el estilo base
             }
         }
+        for (Rectangle barco : barcosColocados) {
+            barco.setVisible(true);
+            barco.setDisable(false);
+            Integer tamaño = mapaBarcos.get(barco);
+            if (tamaño != null) {
+                configurarArrastre(barco, tamaño);
+            } else {
+                System.out.println("Advertencia: No se encontró el barco en mapaBarcos.");
+            }
+        }
+        barcosColocados.clear();
         IdMensajeUsuario.setText("¡Tablero reiniciado! Coloca tus barcos nuevamente.");
-
         System.out.println("Todos los barcos y el tablero han sido reiniciados.");
     }
 
@@ -224,13 +297,13 @@ public class VentanaJuegoController implements Initializable {
     private void OnButtonRevelarBarcos(ActionEvent event) {
         System.out.println("Revelando ubicación de los barcos enemigos...");
 
-        // Recorrer la lista de barcos del tablero enemigo
         for (Barco barco : tableroComputadora.getBarcos()) {
+            String color = obtenerColorPorTamaño(barco.getTamaño());
             for (int[] posicion : barco.getPosiciones()) {
                 int fila = posicion[0];
                 int columna = posicion[1];
                 Button boton = botonesComputadora[fila][columna];
-                boton.setStyle("-fx-background-color: purple;");
+                boton.setStyle("-fx-background-color: " + color + ";");
             }
         }
         IdMensajeUsuario.setText("¡Barcos enemigos revelados!");
@@ -239,20 +312,17 @@ public class VentanaJuegoController implements Initializable {
     @FXML
     private void OnButtonTerminarPartida(ActionEvent event) {
         try {
-            // Obtén el escenario actual de manera más directa
             Stage currentStage = (Stage) ((Button) event.getSource()).getScene().getWindow();
             currentStage.close();
 
-            // Cargar la ventana de inicio o menú principal
             FXMLLoader loader = new FXMLLoader(getClass().getResource("VentanaInicio.fxml"));
             Parent root = loader.load();
             Stage nuevaVentana = new Stage();
             nuevaVentana.setScene(new Scene(root));
             nuevaVentana.setTitle("Battleship - Menú Principal");
-            nuevaVentana.setResizable(false); // Evita que el usuario redimensione la ventana
+            nuevaVentana.setResizable(false);
             nuevaVentana.show();
         } catch (IOException e) {
-            // Manejo de errores en caso de que el archivo FXML no se cargue correctamente
             System.out.println("Error al cargar VentanaInicio.fxml");
             e.printStackTrace();
         }
@@ -261,17 +331,14 @@ public class VentanaJuegoController implements Initializable {
     @FXML
     private void OnVolverPrecionado(ActionEvent event) {
         try {
-            // Carga el archivo FXML de la siguiente ventana
             FXMLLoader loader = new FXMLLoader(getClass().getResource("VentanaNiveles.fxml"));
             Parent root = loader.load();
 
-            // Crea una nueva escena y la muestra
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setTitle("Battleship - Juego");
             stage.show();
 
-            // Opcional: cerrar la ventana actual
             Stage currentStage = (Stage) btnVolverNiveles.getScene().getWindow();
             currentStage.close();
         } catch (IOException e) {
@@ -295,7 +362,6 @@ public class VentanaJuegoController implements Initializable {
 
             Barco barco = null;
 
-            // Definir el tipo de barco a colocar
             if (submarinosColocados < 4) {
                 barco = new Barco(1); // Submarino ocupa 1 celda
                 submarinosColocados++;
@@ -310,7 +376,6 @@ public class VentanaJuegoController implements Initializable {
                 acorazadosColocados++;
             }
 
-            // Intentar colocar el barco
             if (barco != null) {
                 colocado = tableroComputadora.colocarBarco(barco, fila, columna, horizontal);
                 if (!colocado) {
@@ -335,13 +400,11 @@ public class VentanaJuegoController implements Initializable {
         }
 
         System.out.println("Barcos colocados en el tablero:");
-        tableroComputadora.imprimirBarcos(); // Para depuración
-        mostrarBarcosColocadosJugador();
+        tableroComputadora.imprimirBarcos();
         btnVolverNiveles.setVisible(false);
         btnComenzarBatalla.setVisible(false);
         btnOrdenAleatorio.setVisible(false);
         btnDeshacerTablero.setVisible(false);
-        btnOrientacion.setVisible(false);
         btnRevelarBarcos.setVisible(true);
         btnTerminarJuego.setVisible(true);
         IdTiempoTurno.setVisible(true);
@@ -360,6 +423,8 @@ public class VentanaJuegoController implements Initializable {
         idBarcoSubmarino2.setVisible(false);
         idBarcoSubmarino3.setVisible(false);
         idBarcoSubmarino4.setVisible(false);
+        btnHorizontal.setVisible(false);
+        btnVertical.setVisible(false);
         IdMensajeUsuario.setText("¡Barcos colocados! Turno del jugador.");
     }
 
@@ -375,38 +440,32 @@ public class VentanaJuegoController implements Initializable {
                 String resultado = tableroJugador.atacarCasilla(fila, columna);
                 disparoValido = true;
 
-                // Actualizar la vista del tablero del jugador
                 actualizarVistaTableroJugador();
 
-                // Mostrar el resultado al usuario
                 mostrarMensajeTemporal(null, "La computadora dispara: " + resultado, 2);
 
-                // Verificar si la computadora ganó
                 if (verificarVictoria(tableroJugador)) {
                     mostrarMensajeTemporal("¡Perdiste! La computadora hundió todos tus barcos.", null, 2);
                 }
             }
         }
-
-        // Pasar el turno al usuario
         mostrarMensajeTemporal("¡Es tu turno!", null, 2);
     }
 
     private void mostrarMensajeTemporal(String mensajeUsuario, String mensajeComputadora, int duracionSegundos) {
         if (mensajeUsuario != null) {
-            IdMensajeUsuario.setText(mensajeUsuario); // Mostrar mensaje para el usuario
+            IdMensajeUsuario.setText(mensajeUsuario);
         }
         if (mensajeComputadora != null) {
-            IdResultadoDisparo.setText(mensajeComputadora); // Mostrar mensaje para la computadora
+            IdResultadoDisparo.setText(mensajeComputadora);
         }
 
-        // Crear un Timeline para limpiar los mensajes después de duracionSegundos
         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(duracionSegundos), event -> {
-            IdMensajeUsuario.setText(""); // Limpiar mensaje del usuario
-            IdResultadoDisparo.setText(""); // Limpiar mensaje de la computadora
+            IdMensajeUsuario.setText("");
+            IdResultadoDisparo.setText("");
         }));
-        timeline.setCycleCount(1); // Ejecutar solo una vez
-        timeline.play(); // Iniciar el temporizador
+        timeline.setCycleCount(1);
+        timeline.play();
     }
 
     private void deshabilitarTableroComputadora() {
@@ -420,29 +479,21 @@ public class VentanaJuegoController implements Initializable {
     private void dispararEnTableroComputadora(int fila, int columna) {
         System.out.println("Disparo del usuario en fila: " + fila + ", columna: " + columna);
 
-        // Procesar el disparo lógico en el tablero de la computadora
         String resultado = tableroComputadora.atacarCasilla(fila, columna);
 
-        // Validar disparo repetido
         if (resultado.equals("Ya atacaste esta casilla.")) {
             mostrarMensajeTemporal("¡Intenta en otra posición, esta ya fue atacada!", null, 2);
-            return; // Permitir que el usuario realice otro intento
+            return;
         }
-
-        // Mostrar el resultado al usuario
         mostrarMensajeTemporal("Tu disparo: " + resultado, null, 2);
 
-        // Actualizar la vista del tablero de la computadora
         actualizarVistaTableroComputadora();
 
-        // Verificar victoria del usuario
         if (verificarVictoria(tableroComputadora)) {
             mostrarMensajeTemporal("¡Felicidades, ganaste! Todos los barcos del oponente están hundidos.", null, 2);
             deshabilitarTableroComputadora();
-            return; // Detener el juego
+            return;
         }
-
-        // Si el disparo fue válido, pasar turno a la computadora
         turnoComputadora();
     }
 
@@ -455,10 +506,9 @@ public class VentanaJuegoController implements Initializable {
                 Button boton = botonesComputadora[fila][columna];
 
                 if (atacadas[fila][columna]) {
-                    boton.setDisable(true); // Desactivar el botón
+                    boton.setDisable(true);
                     boton.setStyle("-fx-opacity: 1;");
 
-                    // Agregar un evento para mostrar mensaje al intentar interactuar con casillas deshabilitadas
                     boton.setOnMouseClicked(event -> {
                         if (boton.isDisable()) {
                             mostrarMensajeTemporal("¡Ya atacaste esta casilla, intenta con otra!", null, 2);
@@ -524,29 +574,156 @@ public class VentanaJuegoController implements Initializable {
 
     private boolean verificarVictoria(Tablero tablero) {
         if (tablero.getBarcos().isEmpty()) {
-            return false; // Si no hay barcos, no se puede declarar victoria
+            return false;
         }
         for (Barco barco : tablero.getBarcos()) {
             if (!barco.estaHundido()) {
-                return false; // Si al menos un barco no está hundido, no hay victoria
+                return false;
             }
         }
-        return true; // Todos los barcos están hundidos
+        return true;
     }
 
-    private void mostrarBarcosColocadosJugador() {
+    private void configurarArrastre(Rectangle rectBarco, int tamaño) {
+        mapaBarcos.put(rectBarco, tamaño);
+
+        rectBarco.setOnDragDetected(event -> {
+            Dragboard db = rectBarco.startDragAndDrop(TransferMode.COPY);
+
+            ClipboardContent content = new ClipboardContent();
+            content.putString("barco"); // Indicador simple
+            db.setContent(content);
+
+            event.consume();
+        });
+    }
+
+    private void configurarTablero() {
         for (int fila = 0; fila < 10; fila++) {
             for (int columna = 0; columna < 10; columna++) {
-                Button boton = botonesJugador[fila][columna];
+                final int f = fila;
+                final int c = columna;
 
-                boolean ocupada = tableroJugador.getCasillasOcupadas()[fila][columna];
+                Button celda = new Button();
+                celda.setStyle("-fx-background-color: lightgray;");
+                celda.setMinSize(50, 50);
 
-                if (ocupada) {
-                    boton.setStyle("-fx-background-color: green;");
-                } else {
-                    boton.setStyle("-fx-background-color: lightgray;");
+                botonesJugador[fila][columna] = celda;
+                gridPaneJugador.add(celda, columna, fila);
+
+                GridPane.setHalignment(celda, HPos.CENTER);
+                GridPane.setValignment(celda, VPos.CENTER);
+
+                celda.setOnDragOver(event -> {
+                    if (event.getGestureSource() instanceof Rectangle && event.getDragboard().hasString()) {
+                        event.acceptTransferModes(TransferMode.COPY);
+                    }
+                    event.consume();
+                });
+
+                celda.setOnDragDropped(event -> {
+                    Dragboard db = event.getDragboard();
+                    if (db.hasString() && db.getString().equals("barco")) {
+                        Rectangle barcoOrigen = (Rectangle) event.getGestureSource();
+                        Integer tamaño = mapaBarcos.get(barcoOrigen);
+                        boolean horizontal = orientacionHorizontal;
+
+                        if (tamaño == null) {
+                            mostrarMensajeTemporal("No se reconoce el barco arrastrado", null, 2);
+                            event.setDropCompleted(false);
+                            event.consume();
+                            return;
+                        }
+
+                        if (esPosicionValida(f, c, horizontal, tamaño)) {
+                            colocarBarco(f, c, horizontal, tamaño, barcoOrigen);
+                            actualizarVistaTableroJugador();
+                        } else {
+                            mostrarMensajeTemporal("Posición inválida", null, 2);
+                        }
+
+                        event.setDropCompleted(true);
+                    } else {
+                        event.setDropCompleted(false);
+                    }
+                    event.consume();
+                });
+            }
+        }
+    }
+
+    private boolean esPosicionValida(int fila, int columna, boolean esHorizontal, int tamañoBarco) {
+
+        if (fila < 0 || columna < 0 || fila >= 10 || columna >= 10) {
+            return false; // Fuera de los límites
+        }
+        if (esHorizontal) {
+            if (columna + tamañoBarco > 10) {
+                return false; // El barco no cabe horizontalmente
+            }
+            for (int i = 0; i < tamañoBarco; i++) {
+                if (tableroJugador.getCasillasOcupadas()[fila][columna + i]) {
+                    return false;
                 }
             }
+        } else {
+            if (fila + tamañoBarco > 10) {
+                return false; // El barco no cabe verticalmente
+            }
+            for (int i = 0; i < tamañoBarco; i++) {
+                if (tableroJugador.getCasillasOcupadas()[fila + i][columna]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private void colocarBarco(int fila, int columna, boolean horizontal, int tamaño, Rectangle rectBarco) {
+
+        if (rectBarco.getParent() instanceof Pane) {
+            ((Pane) rectBarco.getParent()).getChildren().remove(rectBarco);
+        }
+        Barco barco = new Barco(tamaño);
+
+        boolean colocado = tableroJugador.colocarBarco(barco, fila, columna, horizontal);
+
+        if (!colocado) {
+            mostrarMensajeTemporal("No se pudo colocar el barco", null, 2);
+            return;
+        }
+        String color = obtenerColorPorTamaño(tamaño);
+        for (int i = 0; i < tamaño; i++) {
+            int f = horizontal ? fila : fila + i;
+            int c = horizontal ? columna + i : columna;
+            botonesJugador[f][c].setStyle("-fx-background-color: " + color + ";");
+        }
+        barcosColocados.add(rectBarco);
+        mapaBarcos.remove(rectBarco);
+    }
+
+    private String obtenerColorPorTamaño(int tamaño) {
+        if (tamaño == 1) {
+            return "green";     // Submarino
+        }
+        if (tamaño == 2) {
+            return "orange";         // Destructor
+        }
+        if (tamaño == 3) {
+            return "purple";   // Crucero
+        }
+        if (tamaño == 4) {
+            return "red";         // Acorazado
+        }
+        return "gray";
+    }
+
+    @FXML
+    private void cambiarOrientacion() {
+        if (btnHorizontal.isSelected()) {
+            orientacionHorizontal = true;
+        } else if (btnVertical.isSelected()) {
+            orientacionHorizontal = false;
         }
     }
 }
