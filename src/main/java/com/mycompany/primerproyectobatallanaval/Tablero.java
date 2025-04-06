@@ -25,6 +25,11 @@ public class Tablero {
         return MAX_BARCOS;
     }
 
+    public boolean colocarBarco(int fila, int columna, boolean horizontal, int tamaño) {
+        Barco barco = new Barco(tamaño); // Asegúrate de que este constructor existe
+        return colocarBarco(barco, fila, columna, horizontal); // Llama al método que ya tienes
+    }
+
     public boolean colocarBarco(Barco barco, int fila, int columna, boolean horizontal) {
         if (barcos.size() >= MAX_BARCOS) {
             System.out.println("No se pueden colocar más barcos en el tablero.");
