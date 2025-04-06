@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.animation.KeyFrame;
+import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -290,7 +291,7 @@ public class VentanaJuegoController implements Initializable {
             barco.setDisable(false);
             Integer tamaño = mapaBarcos.get(barco);
             if (tamaño != null) {
-                configurarArrastre(barco, tamaño); 
+                configurarArrastre(barco, tamaño);
             }
         }
         barcosColocados.clear();
@@ -443,26 +444,45 @@ public class VentanaJuegoController implements Initializable {
 
     private void turnoComputadora() {
         System.out.println("Turno de la computadora...");
+        IdMensajeUsuario.setText("Turno de la computadora...");
+        setTableroComputadoraActivo(false);
+        PauseTransition esperaAntesDeDisparo = new PauseTransition(Duration.seconds(2));
+        esperaAntesDeDisparo.setOnFinished(e -> {
 
-        boolean disparoValido = false;
-        while (!disparoValido) {
-            int fila = (int) (Math.random() * 10);
-            int columna = (int) (Math.random() * 10);
+            boolean disparoValido = false;
+            while (!disparoValido) {
+                int fila = (int) (Math.random() * 10);
+                int columna = (int) (Math.random() * 10);
 
-            if (!tableroJugador.getCasillasAtacadas()[fila][columna]) {
-                String resultado = tableroJugador.atacarCasilla(fila, columna);
-                disparoValido = true;
+                if (!tableroJugador.getCasillasAtacadas()[fila][columna]) {
+                    String resultado = tableroJugador.atacarCasilla(fila, columna);
+                    disparoValido = true;
+                    actualizarVistaTableroJugador();
+                    IdResultadoDisparo.setText("La computadora dispara: " + resultado);
 
-                actualizarVistaTableroJugador();
-
-                mostrarMensajeTemporal(null, "La computadora dispara: " + resultado, 2);
-
-                if (verificarVictoria(tableroJugador)) {
-                    mostrarMensajeTemporal("¡Perdiste! La computadora hundió todos tus barcos.", null, 2);
+                    if (verificarVictoria(tableroJugador)) {
+                        mostrarMensajeTemporal("¡Perdiste! La computadora hundió todos tus barcos.", null, 3);
+                        return;
+                    }
+                    PauseTransition esperaAntesDeJugador = new PauseTransition(Duration.seconds(2));
+                    esperaAntesDeJugador.setOnFinished(ev -> {
+                        IdResultadoDisparo.setText("");
+                        IdMensajeUsuario.setText("¡Es tu turno!");
+                        setTableroComputadoraActivo(true);
+                    });
+                    esperaAntesDeJugador.play();
                 }
             }
+        });
+        esperaAntesDeDisparo.play();
+    }
+
+    private void setTableroComputadoraActivo(boolean activo) {
+        for (int fila = 0; fila < 10; fila++) {
+            for (int columna = 0; columna < 10; columna++) {
+                botonesComputadora[fila][columna].setDisable(!activo);
+            }
         }
-        mostrarMensajeTemporal("¡Es tu turno!", null, 2);
     }
 
     private void mostrarMensajeTemporal(String mensajeUsuario, String mensajeComputadora, int duracionSegundos) {
@@ -498,8 +518,7 @@ public class VentanaJuegoController implements Initializable {
             mostrarMensajeTemporal("¡Intenta en otra posición, esta ya fue atacada!", null, 2);
             return;
         }
-        mostrarMensajeTemporal("Tu disparo: " + resultado, null, 2);
-
+       IdResultadoDisparo.setText("Tú disparo es: " + resultado);
         actualizarVistaTableroComputadora();
 
         if (verificarVictoria(tableroComputadora)) {
@@ -693,8 +712,8 @@ public class VentanaJuegoController implements Initializable {
     }
 
     private void colocarBarco(int fila, int columna, boolean horizontal, int tamaño, Rectangle rectBarco) {
-        rectBarco.setVisible(false); 
-        rectBarco.setDisable(true); 
+        rectBarco.setVisible(false);
+        rectBarco.setDisable(true);
         barcosColocados.add(rectBarco);
 
         Barco barco = new Barco(tamaño);
