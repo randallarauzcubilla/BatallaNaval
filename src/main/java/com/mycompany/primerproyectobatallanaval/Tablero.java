@@ -11,6 +11,7 @@ public class Tablero {
     private boolean[][] casillasOcupadas; // Marcar si una casilla está ocupada
     private boolean[][] casillasAtacadas; // Marcar si una casilla fue atacada
     private boolean[] partesTocadas;
+    private int cantidadDisparos = 0;
 
     public Tablero(GridPane gridPane) {
         this.gridPane = gridPane;
@@ -25,6 +26,10 @@ public class Tablero {
         return MAX_BARCOS;
     }
 
+    public int getCantidadDisparos() {
+        return cantidadDisparos;
+    }
+
     public boolean colocarBarco(int fila, int columna, boolean horizontal, int tamaño) {
         Barco barco = new Barco(tamaño);
         return colocarBarco(barco, fila, columna, horizontal);
@@ -37,7 +42,7 @@ public class Tablero {
         }
         if (!verificarEspacio(barco.getTamaño(), fila, columna, horizontal)) {
             System.out.println("Espacio no válido para el barco.");
-            return false; 
+            return false;
         }
         for (int i = 0; i < barco.getTamaño(); i++) {
             int nuevaFila = fila + (horizontal ? 0 : i);
@@ -72,6 +77,7 @@ public class Tablero {
             return "Ya atacaste esta casilla, intenta en otra.";
         }
         casillasAtacadas[fila][columna] = true; // Marcar la casilla como atacada
+        cantidadDisparos++;
         for (Barco barco : barcos) {
             for (int i = 0; i < barco.getTamaño(); i++) {
                 int[] posicion = barco.getPosiciones()[i];
