@@ -1,8 +1,6 @@
 package com.mycompany.primerproyectobatallanaval;
-
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
-
 /**
  *
  * @author Randall AC
@@ -68,5 +66,4 @@ public class Reproductor {
             instance = null;
         }
     }
-
 }
