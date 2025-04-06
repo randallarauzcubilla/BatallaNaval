@@ -100,6 +100,9 @@ public class VentanaJuegoController implements Initializable {
     private ToggleButton btnHorizontal;
     private boolean orientacionHorizontal = true;
     private final Map<Rectangle, Integer> mapaBarcos = new HashMap<>();
+    private int ultimoDisparoExitosoFila = -1;
+    private int ultimoDisparoExitosoCol = -1;
+    private List<int[]> direccionesPendientes = new ArrayList<>();
 
     /**
      * Initializes the controller class.
@@ -450,21 +453,49 @@ public class VentanaJuegoController implements Initializable {
         System.out.println("Turno de la computadora...");
         IdMensajeUsuario.setText("Turno de la computadora...");
         setTableroComputadoraActivo(false);
-        PauseTransition esperaAntesDeDisparo = new PauseTransition(Duration.seconds(2));
+
+        PauseTransition esperaAntesDeDisparo = new PauseTransition(Duration.seconds(1.5));
         esperaAntesDeDisparo.setOnFinished(e -> {
+            boolean disparoRealizado = false;
 
-            boolean disparoValido = false;
-            while (!disparoValido) {
-                int fila = (int) (Math.random() * 10);
-                int columna = (int) (Math.random() * 10);
+            while (!disparoRealizado) {
+                int fila = -1;
+                int col = -1;
+                // Si hubo un acierto anterior, buscar alrededor
+                if (ultimoDisparoExitosoFila != -1 && !direccionesPendientes.isEmpty()) {
+                    int[] dir = direccionesPendientes.remove(0);
+                    fila = ultimoDisparoExitosoFila + dir[0];
+                    col = ultimoDisparoExitosoCol + dir[1];
+                } else {
+                    // Reset si ya no hay direcciones pendientes
+                    ultimoDisparoExitosoFila = -1;
+                    ultimoDisparoExitosoCol = -1;
+                    fila = (int) (Math.random() * 10);
+                    col = (int) (Math.random() * 10);
+                }
+                if (fila >= 0 && fila < 10 && col >= 0 && col < 10 && !tableroJugador.getCasillasAtacadas()[fila][col]) {
+                    String resultado = tableroJugador.atacarCasilla(fila, col);
+                    disparoRealizado = true;
 
-                if (!tableroJugador.getCasillasAtacadas()[fila][columna]) {
-                    String resultado = tableroJugador.atacarCasilla(fila, columna);
-                    disparoValido = true;
+                    if (resultado.equals("¡Averiado!")) {
+                        ultimoDisparoExitosoFila = fila;
+                        ultimoDisparoExitosoCol = col;
+                        // Guardar direcciones a probar
+                        direccionesPendientes.clear();
+                        direccionesPendientes.add(new int[]{-1, 0}); // arriba
+                        direccionesPendientes.add(new int[]{1, 0});  // abajo
+                        direccionesPendientes.add(new int[]{0, -1}); // izquierda
+                        direccionesPendientes.add(new int[]{0, 1});  // derecha
+                    } else if (resultado.equals("¡Hundido!")) {
+                        // Si hunde el barco, reiniciar la búsqueda dirigida
+                        ultimoDisparoExitosoFila = -1;
+                        ultimoDisparoExitosoCol = -1;
+                        direccionesPendientes.clear();
+                    }
                     actualizarVistaTableroJugador();
                     IdResultadoDisparo.setText("La computadora dispara: " + resultado);
                     evaluarFinDelJuego();
-                    PauseTransition esperaAntesDeJugador = new PauseTransition(Duration.seconds(2));
+                    PauseTransition esperaAntesDeJugador = new PauseTransition(Duration.seconds(1.5));
                     esperaAntesDeJugador.setOnFinished(ev -> {
                         IdResultadoDisparo.setText("");
                         IdMensajeUsuario.setText("¡Es tu turno!");
