@@ -217,7 +217,6 @@ public class VentanaJuegoController implements Initializable {
         int acorazadosColocados = 0;
 
         while (submarinosColocados < 4 || destructoresColocados < 3 || crucerosColocados < 2 || acorazadosColocados < 1) {
-            boolean colocado = false;
             int fila = (int) (Math.random() * 10);
             int columna = (int) (Math.random() * 10);
             boolean horizontal = Math.random() < 0.5;
@@ -225,44 +224,48 @@ public class VentanaJuegoController implements Initializable {
             Barco barco = null;
 
             if (submarinosColocados < 4) {
-                barco = new Barco(1); // Submarino ocupa 1 celda
-                submarinosColocados++;
+                barco = new Barco(1);
             } else if (destructoresColocados < 3) {
-                barco = new Barco(2); // Destructor ocupa 2 celdas
-                destructoresColocados++;
+                barco = new Barco(2);
             } else if (crucerosColocados < 2) {
-                barco = new Barco(3); // Crucero ocupa 3 celdas
-                crucerosColocados++;
+                barco = new Barco(3);
             } else if (acorazadosColocados < 1) {
-                barco = new Barco(4); // Acorazado ocupa 4 celdas
-                acorazadosColocados++;
+                barco = new Barco(4);
             }
 
-            if (barco != null) {
-                colocado = tableroJugador.colocarBarco(barco, fila, columna, horizontal);
-                if (colocado) {
-                    String color = obtenerColorPorTamaño(barco.getTamaño());
-                    for (int i = 0; i < barco.getTamaño(); i++) {
-                        int filaActual = horizontal ? fila : fila + i;
-                        int columnaActual = horizontal ? columna + i : columna;
-                        botonesJugador[filaActual][columnaActual].setStyle("-fx-background-color: " + color + ";");
+            if (barco != null && tableroJugador.verificarEspacio(barco.getTamaño(), fila, columna, horizontal)) {
+                // Verificar espacio libre alrededor de todas las celdas que ocuparía
+                boolean espacioSeguro = true;
+                for (int i = 0; i < barco.getTamaño(); i++) {
+                    int f = horizontal ? fila : fila + i;
+                    int c = horizontal ? columna + i : columna;
+                    if (!tableroJugador.hayEspacioAlrededor(f, c)) {
+                        espacioSeguro = false;
+                        break;
                     }
-                } else {
-                    switch (barco.getTamaño()) {
-                        case 1:
-                            submarinosColocados--;
-                            break;
-                        case 2:
-                            destructoresColocados--;
-                            break;
-                        case 3:
-                            crucerosColocados--;
-                            break;
-                        case 4:
-                            acorazadosColocados--;
-                            break;
-                        default:
-                            break;
+                }
+
+                if (espacioSeguro) {
+                    boolean colocado = tableroJugador.colocarBarco(barco, fila, columna, horizontal);
+                    if (colocado) {
+                        String color = obtenerColorPorTamaño(barco.getTamaño());
+                        for (int i = 0; i < barco.getTamaño(); i++) {
+                            int filaActual = horizontal ? fila : fila + i;
+                            int columnaActual = horizontal ? columna + i : columna;
+                            botonesJugador[filaActual][columnaActual].setStyle("-fx-background-color: " + color + ";");
+                        }
+
+                        // Incrementar contador solo si se colocó bien
+                        switch (barco.getTamaño()) {
+                            case 1 ->
+                                submarinosColocados++;
+                            case 2 ->
+                                destructoresColocados++;
+                            case 3 ->
+                                crucerosColocados++;
+                            case 4 ->
+                                acorazadosColocados++;
+                        }
                     }
                 }
             }
@@ -271,6 +274,7 @@ public class VentanaJuegoController implements Initializable {
         System.out.println("Barcos colocados en el tablero del jugador:");
         tableroJugador.imprimirBarcos(); // Depuración
         IdMensajeUsuario.setText("¡Tus barcos han sido colocados de forma aleatoria!");
+
         for (Rectangle barco : mapaBarcos.keySet()) {
             barco.setVisible(false);
             barco.setDisable(true);
@@ -418,7 +422,6 @@ public class VentanaJuegoController implements Initializable {
                 }
             }
         }
-
         System.out.println("Barcos colocados en el tablero:");
         tableroComputadora.imprimirBarcos();
         btnVolverNiveles.setVisible(false);
@@ -719,26 +722,21 @@ public class VentanaJuegoController implements Initializable {
     }
 
     private boolean esPosicionValida(int fila, int columna, boolean esHorizontal, int tamañoBarco) {
-
         if (fila < 0 || columna < 0 || fila >= 10 || columna >= 10) {
-            return false; // Fuera de los límites
+            return false; 
         }
-        if (esHorizontal) {
-            if (columna + tamañoBarco > 10) {
-                return false; // El barco no cabe horizontalmente
-            }
-            for (int i = 0; i < tamañoBarco; i++) {
-                if (tableroJugador.getCasillasOcupadas()[fila][columna + i]) {
-                    return false;
-                }
-            }
-        } else {
-            if (fila + tamañoBarco > 10) {
-                return false; // El barco no cabe verticalmente
-            }
-            for (int i = 0; i < tamañoBarco; i++) {
-                if (tableroJugador.getCasillasOcupadas()[fila + i][columna]) {
-                    return false;
+        if ((esHorizontal && columna + tamañoBarco > 10) || (!esHorizontal && fila + tamañoBarco > 10)) {
+            return false;
+        }
+        int filaInicio = Math.max(0, fila - 1);
+        int filaFin = Math.min(9, (esHorizontal ? fila : fila + tamañoBarco - 1) + 1);
+        int colInicio = Math.max(0, columna - 1);
+        int colFin = Math.min(9, (esHorizontal ? columna + tamañoBarco - 1 : columna) + 1);
+
+        for (int f = filaInicio; f <= filaFin; f++) {
+            for (int c = colInicio; c <= colFin; c++) {
+                if (tableroJugador.getCasillasOcupadas()[f][c]) {
+                    return false; // Hay un barco o está muy cerca
                 }
             }
         }
