@@ -25,7 +25,6 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -267,25 +266,31 @@ public class VentanaJuegoController implements Initializable {
         System.out.println("Barcos colocados en el tablero del jugador:");
         tableroJugador.imprimirBarcos(); // Depuración
         IdMensajeUsuario.setText("¡Tus barcos han sido colocados de forma aleatoria!");
+        for (Rectangle barco : mapaBarcos.keySet()) {
+            barco.setVisible(false);
+            barco.setDisable(true);
+            if (!barcosColocados.contains(barco)) {
+                barcosColocados.add(barco);
+            }
+        }
     }
 
     @FXML
-    private void OnButtonDeshacerColocacion(ActionEvent event) {
+    private void OnButtonDeshacerColocacion(ActionEvent event
+    ) {
         System.out.println("Deshaciendo la colocación de los barcos...");
         tableroJugador.limpiarTablero();
         for (int fila = 0; fila < 10; fila++) {
             for (int columna = 0; columna < 10; columna++) {
-                botonesJugador[fila][columna].setStyle("-fx-background-color: lightblue;"); // Restaurar el estilo base
+                botonesJugador[fila][columna].setStyle("-fx-background-color: lightblue;");
             }
         }
-        for (Rectangle barco : barcosColocados) {
+        for (Rectangle barco : mapaBarcos.keySet()) {
             barco.setVisible(true);
             barco.setDisable(false);
             Integer tamaño = mapaBarcos.get(barco);
             if (tamaño != null) {
-                configurarArrastre(barco, tamaño);
-            } else {
-                System.out.println("Advertencia: No se encontró el barco en mapaBarcos.");
+                configurarArrastre(barco, tamaño); 
             }
         }
         barcosColocados.clear();
@@ -294,7 +299,8 @@ public class VentanaJuegoController implements Initializable {
     }
 
     @FXML
-    private void OnButtonRevelarBarcos(ActionEvent event) {
+    private void OnButtonRevelarBarcos(ActionEvent event
+    ) {
         System.out.println("Revelando ubicación de los barcos enemigos...");
 
         for (Barco barco : tableroComputadora.getBarcos()) {
@@ -310,7 +316,8 @@ public class VentanaJuegoController implements Initializable {
     }
 
     @FXML
-    private void OnButtonTerminarPartida(ActionEvent event) {
+    private void OnButtonTerminarPartida(ActionEvent event
+    ) {
         try {
             Stage currentStage = (Stage) ((Button) event.getSource()).getScene().getWindow();
             currentStage.close();
@@ -329,7 +336,8 @@ public class VentanaJuegoController implements Initializable {
     }
 
     @FXML
-    private void OnVolverPrecionado(ActionEvent event) {
+    private void OnVolverPrecionado(ActionEvent event
+    ) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("VentanaNiveles.fxml"));
             Parent root = loader.load();
@@ -347,7 +355,12 @@ public class VentanaJuegoController implements Initializable {
     }
 
     @FXML
-    private void OnBtnComenzarPartida(ActionEvent event) {
+    private void OnBtnComenzarPartida(ActionEvent event
+    ) {
+        if (tableroJugador.getBarcos().size() != tableroJugador.getMaxBarcos()) {
+            IdMensajeUsuario.setText("¡Debes colocar todos tus barcos antes de comenzar!");
+            return;
+        }
 
         int submarinosColocados = 0;
         int destructoresColocados = 0;
@@ -680,12 +693,11 @@ public class VentanaJuegoController implements Initializable {
     }
 
     private void colocarBarco(int fila, int columna, boolean horizontal, int tamaño, Rectangle rectBarco) {
+        rectBarco.setVisible(false); 
+        rectBarco.setDisable(true); 
+        barcosColocados.add(rectBarco);
 
-        if (rectBarco.getParent() instanceof Pane) {
-            ((Pane) rectBarco.getParent()).getChildren().remove(rectBarco);
-        }
         Barco barco = new Barco(tamaño);
-
         boolean colocado = tableroJugador.colocarBarco(barco, fila, columna, horizontal);
 
         if (!colocado) {
@@ -698,8 +710,6 @@ public class VentanaJuegoController implements Initializable {
             int c = horizontal ? columna + i : columna;
             botonesJugador[f][c].setStyle("-fx-background-color: " + color + ";");
         }
-        barcosColocados.add(rectBarco);
-        mapaBarcos.remove(rectBarco);
     }
 
     private String obtenerColorPorTamaño(int tamaño) {
