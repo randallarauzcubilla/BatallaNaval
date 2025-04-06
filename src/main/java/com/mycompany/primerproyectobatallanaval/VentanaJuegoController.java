@@ -194,6 +194,7 @@ public class VentanaJuegoController implements Initializable {
         btnTerminarJuego.setVisible(false);
         IdTiempoTurno.setVisible(false);
         IdResultadoDisparo.setVisible(false);
+        gridPaneComputadora.setDisable(true);
     }
 
     @FXML
@@ -358,7 +359,8 @@ public class VentanaJuegoController implements Initializable {
     @FXML
     private void OnBtnComenzarPartida(ActionEvent event
     ) {
-        Reproductor.getInstance(null, 0).Stop();
+        Reproductor.detenerMusicaSiActiva();
+
         if (tableroJugador.getBarcos().size() != tableroJugador.getMaxBarcos()) {
             IdMensajeUsuario.setText("¡Debes colocar todos tus barcos antes de comenzar!");
             return;
@@ -440,6 +442,7 @@ public class VentanaJuegoController implements Initializable {
         idBarcoSubmarino4.setVisible(false);
         btnHorizontal.setVisible(false);
         btnVertical.setVisible(false);
+        gridPaneComputadora.setDisable(false);
         IdMensajeUsuario.setText("¡Barcos colocados! Turno del jugador.");
     }
 
@@ -460,11 +463,7 @@ public class VentanaJuegoController implements Initializable {
                     disparoValido = true;
                     actualizarVistaTableroJugador();
                     IdResultadoDisparo.setText("La computadora dispara: " + resultado);
-
-                    if (verificarVictoria(tableroJugador)) {
-                        mostrarMensajeTemporal("¡Perdiste! La computadora hundió todos tus barcos.", null, 3);
-                        return;
-                    }
+                    evaluarFinDelJuego();
                     PauseTransition esperaAntesDeJugador = new PauseTransition(Duration.seconds(2));
                     esperaAntesDeJugador.setOnFinished(ev -> {
                         IdResultadoDisparo.setText("");
@@ -522,12 +521,7 @@ public class VentanaJuegoController implements Initializable {
 
         IdResultadoDisparo.setText("Tú disparo es: " + resultado);
         actualizarVistaTableroComputadora();
-
-        if (verificarVictoria(tableroComputadora)) {
-            mostrarMensajeTemporal("¡Felicidades, ganaste! Todos los barcos del oponente están hundidos.", null, 2);
-            deshabilitarTableroComputadora();
-            return;
-        }
+        evaluarFinDelJuego();
         turnoComputadora();
     }
 
@@ -764,4 +758,74 @@ public class VentanaJuegoController implements Initializable {
             orientacionHorizontal = false;
         }
     }
+
+    public enum ResultadoJuego {
+        VICTORIA_JUGADOR,
+        VICTORIA_COMPUTADORA,
+        EMPATE,
+        CONTINUAR
+    }
+
+    private ResultadoJuego verificarEstadoFinal() {
+        boolean jugadorGana = verificarVictoria(tableroComputadora);
+        boolean computadoraGana = verificarVictoria(tableroJugador);
+
+        int tirosJugador = tableroComputadora.getCantidadDisparos();
+        int tirosComputadora = tableroJugador.getCantidadDisparos();
+
+        if (jugadorGana && computadoraGana) {
+            return ResultadoJuego.EMPATE;
+        }
+
+        if (jugadorGana) {
+            // Dar a la computadora un turno extra si aún no tiene misma cantidad de tiros
+            if (tirosComputadora < tirosJugador) {
+                return ResultadoJuego.CONTINUAR;
+            }
+            return ResultadoJuego.VICTORIA_JUGADOR;
+        }
+
+        if (computadoraGana) {
+            if (tirosJugador < tirosComputadora) {
+                return ResultadoJuego.CONTINUAR;
+            }
+            return ResultadoJuego.VICTORIA_COMPUTADORA;
+        }
+        return ResultadoJuego.CONTINUAR;
+    }
+
+    private void evaluarFinDelJuego() {
+        ResultadoJuego resultado = verificarEstadoFinal();
+
+        switch (resultado) {
+            case VICTORIA_JUGADOR:
+                cambiarAEscenaFinal("ganador");
+                break;
+            case VICTORIA_COMPUTADORA:
+                cambiarAEscenaFinal("perdedor");
+                break;
+            case EMPATE:
+                cambiarAEscenaFinal("empate");
+                break;
+            case CONTINUAR:
+            default:
+                break;
+        }
+    }
+
+    private void cambiarAEscenaFinal(String resultado) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("VentanaFinalJuego.fxml"));
+            Parent root = loader.load();
+
+            VentanaFinalJuegoController controlador = loader.getController();
+            controlador.configurarFinal(resultado);
+
+            Stage stage = (Stage) IdResultadoDisparo.getScene().getWindow();
+            stage.setScene(new Scene(root));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
