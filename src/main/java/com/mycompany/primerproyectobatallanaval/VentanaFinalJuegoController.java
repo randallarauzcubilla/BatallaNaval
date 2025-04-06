@@ -11,6 +11,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 
 /**
@@ -29,6 +31,8 @@ public class VentanaFinalJuegoController implements Initializable {
     private Button btnVolverJugar;
     @FXML
     private Button btnVolverInicioDesdeFinJuego;
+    @FXML
+    private ImageView imagenResultado;
 
     /**
      * Initializes the controller class.
@@ -45,16 +49,20 @@ public class VentanaFinalJuegoController implements Initializable {
         String nombre = UsuarioData.getNombreUsuario();
         nombreJugadorLabel.setText("Jugador: " + nombre);
 
+        String rutaBase = "/Imagenes/";
+
         switch (resultado) {
             case "ganador":
                 mensajeFinalLabel.setText("¡Ganaste!");
-                // imagenResultado.setImage(new Image("ganador.png"));
+                imagenResultado.setImage(new Image(getClass().getResourceAsStream(rutaBase + "ganador.jpg")));
                 break;
             case "perdedor":
                 mensajeFinalLabel.setText("Perdiste");
+                imagenResultado.setImage(new Image(getClass().getResourceAsStream(rutaBase + "Derrota.jpg")));
                 break;
             case "empate":
                 mensajeFinalLabel.setText("¡Empate!");
+                imagenResultado.setImage(new Image(getClass().getResourceAsStream(rutaBase + "empate.png")));
                 break;
         }
     }
