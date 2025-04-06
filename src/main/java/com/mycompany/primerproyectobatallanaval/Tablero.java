@@ -128,6 +128,29 @@ public class Tablero {
         }
     }
 
+    public boolean esPosicionValida(int fila, int columna, boolean esHorizontal, int tamañoBarco) {
+        if (fila < 0 || columna < 0 || fila >= 10 || columna >= 10) {
+            return false;
+        }
+        if ((esHorizontal && columna + tamañoBarco > 10) || (!esHorizontal && fila + tamañoBarco > 10)) {
+            return false;
+        }
+
+        int filaInicio = Math.max(0, fila - 1);
+        int filaFin = Math.min(9, (esHorizontal ? fila : fila + tamañoBarco - 1) + 1);
+        int colInicio = Math.max(0, columna - 1);
+        int colFin = Math.min(9, (esHorizontal ? columna + tamañoBarco - 1 : columna) + 1);
+
+        for (int f = filaInicio; f <= filaFin; f++) {
+            for (int c = colInicio; c <= colFin; c++) {
+                if (this.casillasOcupadas[f][c]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     public boolean hayEspacioAlrededor(int fila, int columna) {
         for (int i = fila - 1; i <= fila + 1; i++) {
             for (int j = columna - 1; j <= columna + 1; j++) {
