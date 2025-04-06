@@ -113,16 +113,16 @@
       </Label>
       <ToggleButton fx:id="btnVertical" layoutX="728.0" layoutY="829.0" mnemonicParsing="false" onAction="#cambiarOrientacion" text="Vertical" />
       <ToggleButton fx:id="btnHorizontal" layoutX="920.0" layoutY="829.0" mnemonicParsing="false" onAction="#cambiarOrientacion" text="Horizontal" />
-      <Rectangle fx:id="idBarcoAcorazado" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="241.0" layoutX="825.0" layoutY="108.0" rotate="90.0" stroke="BLACK" strokeType="INSIDE" width="56.0" />
-      <Rectangle fx:id="idBarcoDestructor1" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="58.0" layoutX="807.0" layoutY="282.0" stroke="BLACK" strokeType="INSIDE" width="117.0" />
-      <Rectangle fx:id="idBarcoDestructor3" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="58.0" layoutX="705.0" layoutY="354.0" stroke="BLACK" strokeType="INSIDE" width="117.0" />
-      <Rectangle fx:id="idBarcoDestructor2" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="58.0" layoutX="890.0" layoutY="354.0" stroke="BLACK" strokeType="INSIDE" width="117.0" />
-      <Rectangle fx:id="idBarcoSubmarino1" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="63.0" layoutX="725.0" layoutY="664.0" stroke="BLACK" strokeType="INSIDE" width="62.0" />
-      <Rectangle fx:id="idBarcoSubmarino4" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="63.0" layoutX="923.0" layoutY="743.0" stroke="BLACK" strokeType="INSIDE" width="62.0" />
-      <Rectangle fx:id="idBarcoSubmarino3" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="63.0" layoutX="725.0" layoutY="743.0" stroke="BLACK" strokeType="INSIDE" width="62.0" />
-      <Rectangle fx:id="idBarcoSubmarino2" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="63.0" layoutX="925.0" layoutY="664.0" stroke="BLACK" strokeType="INSIDE" width="62.0" />
-      <Rectangle fx:id="idBarcoCrucero1" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="62.0" layoutX="666.0" layoutY="502.0" rotate="90.0" stroke="BLACK" strokeType="INSIDE" width="181.0" />
-      <Rectangle fx:id="idBarcoCrucero2" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="62.0" layoutX="866.0" layoutY="502.0" rotate="90.0" stroke="BLACK" strokeType="INSIDE" width="181.0" />
+      <Rectangle fx:id="idBarcoAcorazado" arcHeight="5.0" arcWidth="5.0" fill="#ff1f1f" height="241.0" layoutX="825.0" layoutY="108.0" rotate="90.0" stroke="BLACK" strokeType="INSIDE" width="56.0" />
+      <Rectangle fx:id="idBarcoDestructor1" arcHeight="5.0" arcWidth="5.0" fill="#ffa51f" height="58.0" layoutX="807.0" layoutY="282.0" stroke="BLACK" strokeType="INSIDE" width="117.0" />
+      <Rectangle fx:id="idBarcoDestructor3" arcHeight="5.0" arcWidth="5.0" fill="#ffb31f" height="58.0" layoutX="705.0" layoutY="354.0" stroke="BLACK" strokeType="INSIDE" width="117.0" />
+      <Rectangle fx:id="idBarcoDestructor2" arcHeight="5.0" arcWidth="5.0" fill="#ffb31f" height="58.0" layoutX="890.0" layoutY="354.0" stroke="BLACK" strokeType="INSIDE" width="117.0" />
+      <Rectangle fx:id="idBarcoSubmarino1" arcHeight="5.0" arcWidth="5.0" fill="#208420" height="63.0" layoutX="725.0" layoutY="664.0" stroke="BLACK" strokeType="INSIDE" width="62.0" />
+      <Rectangle fx:id="idBarcoSubmarino4" arcHeight="5.0" arcWidth="5.0" fill="#148c14" height="63.0" layoutX="923.0" layoutY="743.0" stroke="BLACK" strokeType="INSIDE" width="62.0" />
+      <Rectangle fx:id="idBarcoSubmarino3" arcHeight="5.0" arcWidth="5.0" fill="#0a840c" height="63.0" layoutX="725.0" layoutY="743.0" stroke="BLACK" strokeType="INSIDE" width="62.0" />
+      <Rectangle fx:id="idBarcoSubmarino2" arcHeight="5.0" arcWidth="5.0" fill="#1e911a" height="63.0" layoutX="925.0" layoutY="664.0" stroke="BLACK" strokeType="INSIDE" width="62.0" />
+      <Rectangle fx:id="idBarcoCrucero1" arcHeight="5.0" arcWidth="5.0" fill="#3b0d5b" height="62.0" layoutX="666.0" layoutY="502.0" rotate="90.0" stroke="BLACK" strokeType="INSIDE" width="181.0" />
+      <Rectangle fx:id="idBarcoCrucero2" arcHeight="5.0" arcWidth="5.0" fill="#421056" height="62.0" layoutX="866.0" layoutY="502.0" rotate="90.0" stroke="BLACK" strokeType="INSIDE" width="181.0" />
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1a7e22d4" height="42.0" layoutX="145.0" layoutY="57.0" stroke="BLACK" strokeType="INSIDE" width="46.0" />
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#ff0000e5" height="42.0" layoutX="613.0" layoutY="57.0" stroke="BLACK" strokeType="INSIDE" width="46.0" />
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#ffaf21" height="42.0" layoutX="297.0" layoutY="57.0" stroke="BLACK" strokeType="INSIDE" width="46.0" />
