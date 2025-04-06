@@ -53,7 +53,10 @@ public class VentanaInicioController implements Initializable {
 
     @FXML
     private void OnSalirPrecionado(ActionEvent event) {
-        Reproductor.getInstance(null, 0).Stop(); // Detiene la música
-        Platform.exit(); // Cierra la aplicación
+        Reproductor instancia = Reproductor.getInstance(null, 0);
+        if (instancia != null) {
+            instancia.Stop();
+        }
+        Platform.exit();
     }
 }
