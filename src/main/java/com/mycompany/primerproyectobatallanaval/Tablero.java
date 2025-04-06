@@ -15,7 +15,7 @@ public class Tablero {
     public Tablero(GridPane gridPane) {
         this.gridPane = gridPane;
         this.barcos = new ArrayList<>();
-        this.casillasOcupadas = new boolean[10][10]; // Tablero de 10x10
+        this.casillasOcupadas = new boolean[10][10];
         this.casillasAtacadas = new boolean[10][10];
     }
 
@@ -26,18 +26,18 @@ public class Tablero {
     }
 
     public boolean colocarBarco(int fila, int columna, boolean horizontal, int tamaño) {
-        Barco barco = new Barco(tamaño); // Asegúrate de que este constructor existe
-        return colocarBarco(barco, fila, columna, horizontal); // Llama al método que ya tienes
+        Barco barco = new Barco(tamaño);
+        return colocarBarco(barco, fila, columna, horizontal);
     }
 
     public boolean colocarBarco(Barco barco, int fila, int columna, boolean horizontal) {
         if (barcos.size() >= MAX_BARCOS) {
             System.out.println("No se pueden colocar más barcos en el tablero.");
-            return false; // Límite de barcos alcanzado
+            return false;
         }
         if (!verificarEspacio(barco.getTamaño(), fila, columna, horizontal)) {
             System.out.println("Espacio no válido para el barco.");
-            return false; // Posición inválida
+            return false; 
         }
         for (int i = 0; i < barco.getTamaño(); i++) {
             int nuevaFila = fila + (horizontal ? 0 : i);
