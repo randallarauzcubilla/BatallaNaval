@@ -122,8 +122,8 @@ public class VentanaJuegoController implements Initializable {
                 final int finalColumna = columna;
 
                 boton.setOnMouseClicked(event -> {
-                    if (boton.isDisable()) {
-                        mostrarMensajeTemporal("Casilla atacada: (" + finalFila + ", " + finalColumna + ").", null, 2);
+                    if (tableroComputadora.getCasillasAtacadas()[finalFila][finalColumna]) {
+                        mostrarMensajeTemporal("¡Ya disparaste aquí!", null, 2);
                     } else {
                         dispararEnTableroComputadora(finalFila, finalColumna);
                     }
@@ -358,6 +358,7 @@ public class VentanaJuegoController implements Initializable {
     @FXML
     private void OnBtnComenzarPartida(ActionEvent event
     ) {
+        Reproductor.getInstance(null, 0).Stop();
         if (tableroJugador.getBarcos().size() != tableroJugador.getMaxBarcos()) {
             IdMensajeUsuario.setText("¡Debes colocar todos tus barcos antes de comenzar!");
             return;
@@ -514,11 +515,12 @@ public class VentanaJuegoController implements Initializable {
 
         String resultado = tableroComputadora.atacarCasilla(fila, columna);
 
-        if (resultado.equals("Ya atacaste esta casilla.")) {
+        if (resultado.contains("Ya atacaste")) {
             mostrarMensajeTemporal("¡Intenta en otra posición, esta ya fue atacada!", null, 2);
             return;
         }
-       IdResultadoDisparo.setText("Tú disparo es: " + resultado);
+
+        IdResultadoDisparo.setText("Tú disparo es: " + resultado);
         actualizarVistaTableroComputadora();
 
         if (verificarVictoria(tableroComputadora)) {
@@ -541,12 +543,6 @@ public class VentanaJuegoController implements Initializable {
                     boton.setDisable(true);
                     boton.setStyle("-fx-opacity: 1;");
 
-                    boton.setOnMouseClicked(event -> {
-                        if (boton.isDisable()) {
-                            mostrarMensajeTemporal("¡Ya atacaste esta casilla, intenta con otra!", null, 2);
-                        }
-                    });
-
                     if (ocupadas[fila][columna]) {
                         boolean hundido = false;
                         for (Barco barco : tableroComputadora.getBarcos()) {
@@ -566,8 +562,21 @@ public class VentanaJuegoController implements Initializable {
                         boton.setStyle("-fx-background-color: blue; -fx-opacity: 1;"); // Agua
                     }
                 } else {
+                    boton.setDisable(false);
                     boton.setStyle("-fx-background-color: lightgray;"); // Casilla no atacada
                 }
+
+                // Asignar el evento SIEMPRE
+                int finalFila = fila;
+                int finalColumna = columna;
+
+                boton.setOnMouseClicked(event -> {
+                    if (boton.isDisable()) {
+                        mostrarMensajeTemporal("¡Ya atacaste esta casilla, intenta con otra!", null, 2);
+                    } else {
+                        dispararEnTableroComputadora(finalFila, finalColumna);
+                    }
+                });
             }
         }
     }
