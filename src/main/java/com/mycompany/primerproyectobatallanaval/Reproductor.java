@@ -23,8 +23,10 @@ public class Reproductor {
         }
     }
 
-    // Método estático para obtener la única instancia
     public static Reproductor getInstance(String audioPath, int type) {
+        if (audioPath == null || audioPath.isEmpty()) {
+            return null;
+        }
         if (instance == null) {
             instance = new Reproductor(audioPath, type);
         }
@@ -57,4 +59,14 @@ public class Reproductor {
             mediaPlayer.setVolume(volumen);
         }
     }
+
+    public static void detenerMusicaSiActiva() {
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.dispose();
+            mediaPlayer = null;
+            instance = null;
+        }
+    }
+
 }
