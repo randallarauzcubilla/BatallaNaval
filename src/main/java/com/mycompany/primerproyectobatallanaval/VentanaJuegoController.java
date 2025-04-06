@@ -364,8 +364,7 @@ public class VentanaJuegoController implements Initializable {
     }
 
     @FXML
-    private void OnBtnComenzarPartida(ActionEvent event
-    ) {
+    private void OnBtnComenzarPartida(ActionEvent event) {
         Reproductor.detenerMusicaSiActiva();
 
         if (tableroJugador.getBarcos().size() != tableroJugador.getMaxBarcos()) {
@@ -379,7 +378,6 @@ public class VentanaJuegoController implements Initializable {
         int acorazadosColocados = 0;
 
         while (submarinosColocados < 4 || destructoresColocados < 3 || crucerosColocados < 2 || acorazadosColocados < 1) {
-            boolean colocado = false;
             int fila = (int) (Math.random() * 10);
             int columna = (int) (Math.random() * 10);
             boolean horizontal = Math.random() < 0.5;
@@ -387,43 +385,35 @@ public class VentanaJuegoController implements Initializable {
             Barco barco = null;
 
             if (submarinosColocados < 4) {
-                barco = new Barco(1); // Submarino ocupa 1 celda
-                submarinosColocados++;
+                barco = new Barco(1);
             } else if (destructoresColocados < 3) {
-                barco = new Barco(2); // Destructor ocupa 2 celdas
-                destructoresColocados++;
+                barco = new Barco(2);
             } else if (crucerosColocados < 2) {
-                barco = new Barco(3); // Crucero ocupa 3 celdas
-                crucerosColocados++;
+                barco = new Barco(3);
             } else if (acorazadosColocados < 1) {
-                barco = new Barco(4); // Acorazado ocupa 4 celdas
-                acorazadosColocados++;
+                barco = new Barco(4);
             }
 
-            if (barco != null) {
-                colocado = tableroComputadora.colocarBarco(barco, fila, columna, horizontal);
-                if (!colocado) {
+            if (barco != null && tableroComputadora.esPosicionValida(fila, columna, horizontal, barco.getTamaño())) {
+                boolean colocado = tableroComputadora.colocarBarco(barco, fila, columna, horizontal);
+                if (colocado) {
                     switch (barco.getTamaño()) {
-                        case 1:
-                            submarinosColocados--;
-                            break;
-                        case 2:
-                            destructoresColocados--;
-                            break;
-                        case 3:
-                            crucerosColocados--;
-                            break;
-                        case 4:
-                            acorazadosColocados--;
-                            break;
-                        default:
-                            break;
+                        case 1 ->
+                            submarinosColocados++;
+                        case 2 ->
+                            destructoresColocados++;
+                        case 3 ->
+                            crucerosColocados++;
+                        case 4 ->
+                            acorazadosColocados++;
                     }
                 }
             }
         }
+
         System.out.println("Barcos colocados en el tablero:");
         tableroComputadora.imprimirBarcos();
+
         btnVolverNiveles.setVisible(false);
         btnComenzarBatalla.setVisible(false);
         btnOrdenAleatorio.setVisible(false);
@@ -723,7 +713,7 @@ public class VentanaJuegoController implements Initializable {
 
     private boolean esPosicionValida(int fila, int columna, boolean esHorizontal, int tamañoBarco) {
         if (fila < 0 || columna < 0 || fila >= 10 || columna >= 10) {
-            return false; 
+            return false;
         }
         if ((esHorizontal && columna + tamañoBarco > 10) || (!esHorizontal && fila + tamañoBarco > 10)) {
             return false;
