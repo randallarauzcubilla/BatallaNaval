@@ -103,6 +103,11 @@ public class VentanaJuegoController implements Initializable {
     private int ultimoDisparoExitosoFila = -1;
     private int ultimoDisparoExitosoCol = -1;
     private List<int[]> direccionesPendientes = new ArrayList<>();
+    private int primerImpactoFila = -1;
+    private int primerImpactoCol = -1;
+    private boolean intentandoDireccionOpuesta = false;
+    private int[] direccionActual = null;
+    private boolean direccionConfirmada = false;
 
     /**
      * Initializes the controller class.
@@ -457,40 +462,93 @@ public class VentanaJuegoController implements Initializable {
             while (!disparoRealizado) {
                 int fila = -1;
                 int col = -1;
-                // Si hubo un acierto anterior, buscar alrededor
-                if (ultimoDisparoExitosoFila != -1 && !direccionesPendientes.isEmpty()) {
-                    int[] dir = direccionesPendientes.remove(0);
-                    fila = ultimoDisparoExitosoFila + dir[0];
-                    col = ultimoDisparoExitosoCol + dir[1];
+
+                if (ultimoDisparoExitosoFila != -1) {
+                    if (direccionConfirmada && direccionActual != null) {
+                        // Continuar en la dirección confirmada
+                        fila = ultimoDisparoExitosoFila + direccionActual[0];
+                        col = ultimoDisparoExitosoCol + direccionActual[1];
+                    } else if (!direccionesPendientes.isEmpty()) {
+                        int[] dir = direccionesPendientes.remove(0);
+                        fila = ultimoDisparoExitosoFila + dir[0];
+                        col = ultimoDisparoExitosoCol + dir[1];
+                        direccionActual = dir;
+                    } else {
+                        // Volver al primer impacto e intentar dirección opuesta
+                        if (direccionActual != null && primerImpactoFila != -1) {
+                            fila = primerImpactoFila - direccionActual[0];
+                            col = primerImpactoCol - direccionActual[1];
+                            direccionActual = new int[]{-direccionActual[0], -direccionActual[1]};
+                            direccionConfirmada = true; // Ya sabemos la orientación
+                            ultimoDisparoExitosoFila = primerImpactoFila;
+                            ultimoDisparoExitosoCol = primerImpactoCol;
+                        } else {
+                            // Reiniciar todo si no hay más opciones
+                            ultimoDisparoExitosoFila = -1;
+                            ultimoDisparoExitosoCol = -1;
+                            direccionActual = null;
+                            direccionConfirmada = false;
+                            primerImpactoFila = -1;
+                            primerImpactoCol = -1;
+                            fila = (int) (Math.random() * 10);
+                            col = (int) (Math.random() * 10);
+                        }
+                    }
                 } else {
-                    // Reset si ya no hay direcciones pendientes
-                    ultimoDisparoExitosoFila = -1;
-                    ultimoDisparoExitosoCol = -1;
+                    // Disparo aleatorio
                     fila = (int) (Math.random() * 10);
                     col = (int) (Math.random() * 10);
                 }
+
                 if (fila >= 0 && fila < 10 && col >= 0 && col < 10 && !tableroJugador.getCasillasAtacadas()[fila][col]) {
                     String resultado = tableroJugador.atacarCasilla(fila, col);
                     disparoRealizado = true;
 
                     if (resultado.equals("¡Averiado!")) {
+                        if (ultimoDisparoExitosoFila == -1) {
+                            // Primer impacto
+                            primerImpactoFila = fila;
+                            primerImpactoCol = col;
+                            direccionesPendientes.clear();
+                            direccionesPendientes.add(new int[]{-1, 0}); // arriba
+                            direccionesPendientes.add(new int[]{1, 0});  // abajo
+                            direccionesPendientes.add(new int[]{0, -1}); // izquierda
+                            direccionesPendientes.add(new int[]{0, 1});  // derecha
+                            direccionActual = null;
+                            direccionConfirmada = false;
+                        } else if (!direccionConfirmada && direccionActual != null) {
+                            // Segundo impacto, confirmar dirección
+                            direccionConfirmada = true;
+                        }
+
                         ultimoDisparoExitosoFila = fila;
                         ultimoDisparoExitosoCol = col;
-                        // Guardar direcciones a probar
-                        direccionesPendientes.clear();
-                        direccionesPendientes.add(new int[]{-1, 0}); // arriba
-                        direccionesPendientes.add(new int[]{1, 0});  // abajo
-                        direccionesPendientes.add(new int[]{0, -1}); // izquierda
-                        direccionesPendientes.add(new int[]{0, 1});  // derecha
+
                     } else if (resultado.equals("¡Hundido!")) {
-                        // Si hunde el barco, reiniciar la búsqueda dirigida
+                        // Reiniciar estado
                         ultimoDisparoExitosoFila = -1;
                         ultimoDisparoExitosoCol = -1;
+                        direccionActual = null;
+                        direccionConfirmada = false;
                         direccionesPendientes.clear();
+                        primerImpactoFila = -1;
+                        primerImpactoCol = -1;
+                    } else {
+                        // Agua: si estaba en una dirección confirmada, volver al inicio y probar la contraria
+                        if (direccionConfirmada && primerImpactoFila != -1) {
+                            ultimoDisparoExitosoFila = primerImpactoFila;
+                            ultimoDisparoExitosoCol = primerImpactoCol;
+                            direccionActual = new int[]{-direccionActual[0], -direccionActual[1]};
+                            direccionConfirmada = true;
+                        } else {
+                            direccionActual = null;
+                        }
                     }
+
                     actualizarVistaTableroJugador();
                     IdResultadoDisparo.setText("La computadora dispara: " + resultado);
                     evaluarFinDelJuego();
+
                     PauseTransition esperaAntesDeJugador = new PauseTransition(Duration.seconds(1.5));
                     esperaAntesDeJugador.setOnFinished(ev -> {
                         IdResultadoDisparo.setText("");
@@ -526,14 +584,6 @@ public class VentanaJuegoController implements Initializable {
         }));
         timeline.setCycleCount(1);
         timeline.play();
-    }
-
-    private void deshabilitarTableroComputadora() {
-        for (int fila = 0; fila < 10; fila++) {
-            for (int columna = 0; columna < 10; columna++) {
-                botonesComputadora[fila][columna].setDisable(true);
-            }
-        }
     }
 
     private void dispararEnTableroComputadora(int fila, int columna) {
