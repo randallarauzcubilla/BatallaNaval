@@ -372,6 +372,9 @@ public class VentanaJuegoController implements Initializable {
             return;
         }
 
+        // 👉 IMPORTANTE: limpiamos el tablero de la computadora para evitar duplicados y bucles infinitos
+        tableroComputadora.limpiarTablero();
+
         int submarinosColocados = 0;
         int destructoresColocados = 0;
         int crucerosColocados = 0;
