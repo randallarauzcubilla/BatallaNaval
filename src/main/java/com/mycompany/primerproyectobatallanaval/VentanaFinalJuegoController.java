@@ -47,14 +47,14 @@ public class VentanaFinalJuegoController implements Initializable {
 
     public void configurarFinal(String resultado) {
         String nombre = UsuarioData.getNombreUsuario();
-        nombreJugadorLabel.setText("Jugador: " + nombre);
+        nombreJugadorLabel.setText(nombre);
 
         String rutaBase = "/Imagenes/";
 
         switch (resultado) {
             case "ganador":
                 mensajeFinalLabel.setText("¡Ganaste!");
-                imagenResultado.setImage(new Image(getClass().getResourceAsStream(rutaBase + "ganador.jpg")));
+                imagenResultado.setImage(new Image(getClass().getResourceAsStream(rutaBase + "ganador2.jpg")));
                 break;
             case "perdedor":
                 mensajeFinalLabel.setText("Perdiste");
@@ -62,7 +62,7 @@ public class VentanaFinalJuegoController implements Initializable {
                 break;
             case "empate":
                 mensajeFinalLabel.setText("¡Empate!");
-                imagenResultado.setImage(new Image(getClass().getResourceAsStream(rutaBase + "empate.png")));
+                imagenResultado.setImage(new Image(getClass().getResourceAsStream(rutaBase + "empatee.jpg")));
                 break;
         }
     }
@@ -74,6 +74,8 @@ public class VentanaFinalJuegoController implements Initializable {
             Parent root = loader.load();
             Stage stage = (Stage) btnVolverInicioDesdeFinJuego.getScene().getWindow();
             stage.setScene(new Scene(root));
+            stage.sizeToScene();
+            stage.centerOnScreen();
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
@@ -87,6 +89,8 @@ public class VentanaFinalJuegoController implements Initializable {
             Parent root = loader.load();
             Stage stage = (Stage) btnVolverJugar.getScene().getWindow();
             stage.setScene(new Scene(root));
+            stage.sizeToScene(); 
+            stage.centerOnScreen();
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
