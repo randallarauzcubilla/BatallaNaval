@@ -9,6 +9,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
@@ -32,7 +33,13 @@ public class VentanaInicioController implements Initializable {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("VentanaNiveles.fxml"));
             Stage stage = (Stage) ButtonJugar.getScene().getWindow();
-            stage.getScene().setRoot(root);
+
+            Scene nuevaEscena = new Scene(root);
+            stage.setScene(nuevaEscena);
+            stage.sizeToScene();
+            stage.centerOnScreen();
+            stage.show(); 
+
         } catch (IOException e) {
             e.printStackTrace();
         }
