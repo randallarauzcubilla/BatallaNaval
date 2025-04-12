@@ -108,6 +108,7 @@ public class VentanaJuegoController implements Initializable {
     private boolean intentandoDireccionOpuesta = false;
     private int[] direccionActual = null;
     private boolean direccionConfirmada = false;
+    private boolean intentoAmbasDirecciones = false;
 
     /**
      * Initializes the controller class.
@@ -136,7 +137,6 @@ public class VentanaJuegoController implements Initializable {
                         dispararEnTableroComputadora(finalFila, finalColumna);
                     }
                 });
-
                 GridPane.setHalignment(boton, HPos.CENTER);
                 GridPane.setValignment(boton, VPos.CENTER);
                 gridPaneComputadora.add(boton, columna, fila);
@@ -249,7 +249,6 @@ public class VentanaJuegoController implements Initializable {
                         break;
                     }
                 }
-
                 if (espacioSeguro) {
                     boolean colocado = tableroJugador.colocarBarco(barco, fila, columna, horizontal);
                     if (colocado) {
@@ -259,7 +258,6 @@ public class VentanaJuegoController implements Initializable {
                             int columnaActual = horizontal ? columna + i : columna;
                             botonesJugador[filaActual][columnaActual].setStyle("-fx-background-color: " + color + ";");
                         }
-
                         // Incrementar contador solo si se colocó bien
                         switch (barco.getTamaño()) {
                             case 1 ->
@@ -287,6 +285,7 @@ public class VentanaJuegoController implements Initializable {
                 barcosColocados.add(barco);
             }
         }
+        btnOrdenAleatorio.setDisable(true); // o setVisible(false);
     }
 
     @FXML
@@ -310,6 +309,7 @@ public class VentanaJuegoController implements Initializable {
         barcosColocados.clear();
         IdMensajeUsuario.setText("¡Tablero reiniciado! Coloca tus barcos nuevamente.");
         System.out.println("Todos los barcos y el tablero han sido reiniciados.");
+        btnOrdenAleatorio.setDisable(false); // o setVisible(false);
     }
 
     @FXML
@@ -377,7 +377,6 @@ public class VentanaJuegoController implements Initializable {
             return;
         }
 
-        // 👉 IMPORTANTE: limpiamos el tablero de la computadora para evitar duplicados y bucles infinitos
         tableroComputadora.limpiarTablero();
 
         int submarinosColocados = 0;
@@ -465,31 +464,66 @@ public class VentanaJuegoController implements Initializable {
 
                 if (ultimoDisparoExitosoFila != -1) {
                     if (direccionConfirmada && direccionActual != null) {
-                        // Continuar en la dirección confirmada
-                        fila = ultimoDisparoExitosoFila + direccionActual[0];
-                        col = ultimoDisparoExitosoCol + direccionActual[1];
+                        // Verificar que la siguiente casilla en dirección actual no haya sido atacada
+                        int siguienteFila = ultimoDisparoExitosoFila + direccionActual[0];
+                        int siguienteCol = ultimoDisparoExitosoCol + direccionActual[1];
+
+                        if (esPosicionValida(siguienteFila, siguienteCol)) {
+                            if (!tableroJugador.getCasillasAtacadas()[siguienteFila][siguienteCol]) {
+                                fila = siguienteFila;
+                                col = siguienteCol;
+                            } else {
+                                // Si ya fue atacada, volver al primer impacto e intentar dirección opuesta
+                                if (!intentandoDireccionOpuesta && primerImpactoFila != -1) {
+                                    ultimoDisparoExitosoFila = primerImpactoFila;
+                                    ultimoDisparoExitosoCol = primerImpactoCol;
+                                    direccionActual = new int[]{-direccionActual[0], -direccionActual[1]};
+                                    direccionConfirmada = true;
+                                    intentandoDireccionOpuesta = true;
+                                    continue;
+                                } else {
+                                    // Si ya se intentó dirección opuesta, reiniciar
+                                    reiniciarEstadoDisparo();
+                                    continue;
+                                }
+                            }
+                        } else {
+                            // Fuera de los límites del tablero, intentar dirección opuesta
+                            if (!intentandoDireccionOpuesta && primerImpactoFila != -1) {
+                                ultimoDisparoExitosoFila = primerImpactoFila;
+                                ultimoDisparoExitosoCol = primerImpactoCol;
+                                direccionActual = new int[]{-direccionActual[0], -direccionActual[1]};
+                                direccionConfirmada = true;
+                                intentandoDireccionOpuesta = true;
+                                continue;
+                            } else {
+                                reiniciarEstadoDisparo();
+                                continue;
+                            }
+                        }
                     } else if (!direccionesPendientes.isEmpty()) {
                         int[] dir = direccionesPendientes.remove(0);
-                        fila = ultimoDisparoExitosoFila + dir[0];
-                        col = ultimoDisparoExitosoCol + dir[1];
-                        direccionActual = dir;
+                        int nuevaFila = ultimoDisparoExitosoFila + dir[0];
+                        int nuevaCol = ultimoDisparoExitosoCol + dir[1];
+
+                        if (esPosicionValida(nuevaFila, nuevaCol)
+                                && !tableroJugador.getCasillasAtacadas()[nuevaFila][nuevaCol]) {
+                            fila = nuevaFila;
+                            col = nuevaCol;
+                            direccionActual = dir;
+                        }
                     } else {
                         // Volver al primer impacto e intentar dirección opuesta
                         if (direccionActual != null && primerImpactoFila != -1) {
                             fila = primerImpactoFila - direccionActual[0];
                             col = primerImpactoCol - direccionActual[1];
                             direccionActual = new int[]{-direccionActual[0], -direccionActual[1]};
-                            direccionConfirmada = true; // Ya sabemos la orientación
+                            direccionConfirmada = true;
+                            intentandoDireccionOpuesta = true;
                             ultimoDisparoExitosoFila = primerImpactoFila;
                             ultimoDisparoExitosoCol = primerImpactoCol;
                         } else {
-                            // Reiniciar todo si no hay más opciones
-                            ultimoDisparoExitosoFila = -1;
-                            ultimoDisparoExitosoCol = -1;
-                            direccionActual = null;
-                            direccionConfirmada = false;
-                            primerImpactoFila = -1;
-                            primerImpactoCol = -1;
+                            reiniciarEstadoDisparo();
                             fila = (int) (Math.random() * 10);
                             col = (int) (Math.random() * 10);
                         }
@@ -500,7 +534,7 @@ public class VentanaJuegoController implements Initializable {
                     col = (int) (Math.random() * 10);
                 }
 
-                if (fila >= 0 && fila < 10 && col >= 0 && col < 10 && !tableroJugador.getCasillasAtacadas()[fila][col]) {
+                if (esPosicionValida(fila, col) && !tableroJugador.getCasillasAtacadas()[fila][col]) {
                     String resultado = tableroJugador.atacarCasilla(fila, col);
                     disparoRealizado = true;
 
@@ -516,9 +550,11 @@ public class VentanaJuegoController implements Initializable {
                             direccionesPendientes.add(new int[]{0, 1});  // derecha
                             direccionActual = null;
                             direccionConfirmada = false;
+                            intentandoDireccionOpuesta = false;
                         } else if (!direccionConfirmada && direccionActual != null) {
                             // Segundo impacto, confirmar dirección
                             direccionConfirmada = true;
+                            intentandoDireccionOpuesta = false;
                         }
 
                         ultimoDisparoExitosoFila = fila;
@@ -526,20 +562,17 @@ public class VentanaJuegoController implements Initializable {
 
                     } else if (resultado.equals("¡Hundido!")) {
                         // Reiniciar estado
-                        ultimoDisparoExitosoFila = -1;
-                        ultimoDisparoExitosoCol = -1;
-                        direccionActual = null;
-                        direccionConfirmada = false;
-                        direccionesPendientes.clear();
-                        primerImpactoFila = -1;
-                        primerImpactoCol = -1;
+                        reiniciarEstadoDisparo();
                     } else {
-                        // Agua: si estaba en una dirección confirmada, volver al inicio y probar la contraria
-                        if (direccionConfirmada && primerImpactoFila != -1) {
+                        // Agua
+                        if (direccionConfirmada && primerImpactoFila != -1 && !intentandoDireccionOpuesta) {
                             ultimoDisparoExitosoFila = primerImpactoFila;
                             ultimoDisparoExitosoCol = primerImpactoCol;
                             direccionActual = new int[]{-direccionActual[0], -direccionActual[1]};
                             direccionConfirmada = true;
+                            intentandoDireccionOpuesta = true;
+                        } else if (direccionConfirmada && intentandoDireccionOpuesta) {
+                            reiniciarEstadoDisparo();
                         } else {
                             direccionActual = null;
                         }
@@ -560,6 +593,21 @@ public class VentanaJuegoController implements Initializable {
             }
         });
         esperaAntesDeDisparo.play();
+    }
+
+    private boolean esPosicionValida(int fila, int col) {
+        return fila >= 0 && fila < 10 && col >= 0 && col < 10;
+    }
+
+    private void reiniciarEstadoDisparo() {
+        ultimoDisparoExitosoFila = -1;
+        ultimoDisparoExitosoCol = -1;
+        direccionActual = null;
+        direccionConfirmada = false;
+        primerImpactoFila = -1;
+        primerImpactoCol = -1;
+        intentandoDireccionOpuesta = false;
+        direccionesPendientes.clear();
     }
 
     private void setTableroComputadoraActivo(boolean activo) {
@@ -899,5 +947,4 @@ public class VentanaJuegoController implements Initializable {
             e.printStackTrace();
         }
     }
-
 }
