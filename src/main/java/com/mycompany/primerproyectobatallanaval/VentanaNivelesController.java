@@ -73,13 +73,13 @@ public class VentanaNivelesController implements Initializable {
 
     private void cambiarAVentanaJuego(ActionEvent event) {
         try {
-            // Cargar el archivo FXML de la ventana del juego
             Parent root = FXMLLoader.load(getClass().getResource("VentanaJuego.fxml"));
-
-            // Cambiar la escena al contenido del juego
             Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
+            Scene nuevaEscena = new Scene(root);
+            stage.setScene(nuevaEscena);
+            stage.sizeToScene(); 
             stage.setTitle("Battleship - Juego");
+            stage.centerOnScreen();
             stage.show();
 
         } catch (IOException e) {
