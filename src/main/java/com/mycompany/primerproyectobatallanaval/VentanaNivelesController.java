@@ -66,21 +66,24 @@ public class VentanaNivelesController implements Initializable {
     }
 
     private void cambiarAVentanaJuego(ActionEvent event) {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("VentanaJuego.fxml"));
-            Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
-            Scene nuevaEscena = new Scene(root);
-            stage.setScene(nuevaEscena);
-            stage.sizeToScene(); 
-            stage.setTitle("Battleship - Juego");
-            stage.centerOnScreen();
-            stage.show();
-        } catch (IOException e) {
-            System.err.println("Error al cargar VentanaJuego.fxml:");
-            e.printStackTrace();
-        }
+    try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("VentanaJuego.fxml"));
+        Parent root = loader.load();
+        VentanaJuegoController controlador = loader.getController();
+        Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
+        controlador.setStagePrincipal(stage);
+        Scene nuevaEscena = new Scene(root);
+        stage.setScene(nuevaEscena);
+        stage.sizeToScene(); 
+        stage.setTitle("Battleship - Juego");
+        stage.centerOnScreen();
+        stage.show();
+    } catch (IOException e) {
+        System.err.println("Error al cargar VentanaJuego.fxml:");
+        e.printStackTrace();
     }
-
+}
+    
     private void mostrarAlerta(String mensaje) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Falta información");
