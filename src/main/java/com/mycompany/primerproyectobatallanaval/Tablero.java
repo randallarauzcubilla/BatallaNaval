@@ -20,7 +20,7 @@ public class Tablero {
         this.casillasAtacadas = new boolean[10][10];
     }
 
-    private final int MAX_BARCOS = 10; // Número máximo de barcos permitidos
+    private final int MAX_BARCOS = 10;
 
     public int getMaxBarcos() {
         return MAX_BARCOS;
@@ -41,7 +41,7 @@ public class Tablero {
             return false;
         }
         if (!verificarEspacio(barco.getTamaño(), fila, columna, horizontal)) {
-            System.out.println("Espacio no válido para el barco.");
+            System.out.println("Espacio no válido para el barco de tamaño " + barco.getTamaño());
             return false;
         }
         for (int i = 0; i < barco.getTamaño(); i++) {
@@ -51,7 +51,6 @@ public class Tablero {
             barco.setPosicion(i, nuevaFila, nuevaColumna);
         }
         barcos.add(barco);
-        System.out.println("Barco agregado: tamaño " + barco.getTamaño() + ", posición inicial (" + fila + "," + columna + ")");
         return true;
     }
 
