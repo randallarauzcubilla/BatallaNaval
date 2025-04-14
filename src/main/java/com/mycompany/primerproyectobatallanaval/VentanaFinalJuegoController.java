@@ -89,11 +89,10 @@ public class VentanaFinalJuegoController implements Initializable {
             Parent root = loader.load();
             Stage stage = (Stage) btnVolverJugar.getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.sizeToScene(); 
+            stage.sizeToScene();
             stage.centerOnScreen();
             stage.show();
         } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }
