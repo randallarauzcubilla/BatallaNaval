@@ -54,14 +54,14 @@ public class VentanaFinalJuegoController implements Initializable {
         switch (resultado) {
             case "ganador":
                 mensajeFinalLabel.setText("¡Ganaste!");
-                imagenResultado.setImage(new Image(getClass().getResourceAsStream(rutaBase + "ganador2.jpg")));
+                imagenResultado.setImage(new Image(getClass().getResourceAsStream(rutaBase + "victoria.jpg")));
                 break;
             case "perdedor":
-                mensajeFinalLabel.setText("Perdiste");
+                mensajeFinalLabel.setText("¡Perdiste!");
                 imagenResultado.setImage(new Image(getClass().getResourceAsStream(rutaBase + "Derrota.jpg")));
                 break;
             case "empate":
-                mensajeFinalLabel.setText("¡Empate!");
+                mensajeFinalLabel.setText("¡Empataste!");
                 imagenResultado.setImage(new Image(getClass().getResourceAsStream(rutaBase + "empatee.jpg")));
                 break;
         }
@@ -88,11 +88,12 @@ public class VentanaFinalJuegoController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("VentanaNiveles.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnVolverJugar.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root)); 
             stage.sizeToScene();
             stage.centerOnScreen();
             stage.show();
         } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
