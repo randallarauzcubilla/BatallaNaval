@@ -35,6 +35,7 @@ import javafx.util.Duration;
  * @author RANDALL AC
  */
 public class VentanaJuegoController implements Initializable {
+    private Stage stagePrincipal;
     @FXML
     private GridPane gridPaneJugador;
     @FXML
@@ -298,6 +299,7 @@ public class VentanaJuegoController implements Initializable {
     private void OnButtonTerminarPartida(ActionEvent event
     ) {
         try {
+            Reproductor.detenerMusicaSiActiva();
             Stage currentStage = (Stage) ((Button) event.getSource()).getScene().getWindow();
             currentStage.close();
             FXMLLoader loader = new FXMLLoader(getClass().getResource("VentanaInicio.fxml"));
@@ -333,6 +335,7 @@ public class VentanaJuegoController implements Initializable {
     @FXML
     private void OnBtnComenzarPartida(ActionEvent event) {
         Reproductor.detenerMusicaSiActiva();
+        Reproductor.getInstance(getClass().getResource("/Musica/BatallaNavalMusic.mp3").toExternalForm(), 1).PlayOnBucle();
         if (tableroJugador.getBarcos().size() != tableroJugador.getMaxBarcos()) {
             IdMensajeUsuario.setText("¡Debes colocar todos tus barcos antes de comenzar!");
             return;
@@ -344,7 +347,7 @@ public class VentanaJuegoController implements Initializable {
             int tamaño = tamaños[i];
             int barcosColocados = 0;
             while (barcosColocados < barcosPorTamaño[i]) {
-                int intentos = 0; 
+                int intentos = 0;
                 boolean colocado = false;
                 while (!colocado && intentos < 100) { // Limitar los intentos
                     intentos++;
@@ -360,7 +363,7 @@ public class VentanaJuegoController implements Initializable {
                     System.err.println("No hay suficiente espacio para colocar el barco de tamaño " + tamaño);
                     break;
                 } else {
-                    barcosColocados++; 
+                    barcosColocados++;
                 }
             }
         }
@@ -529,7 +532,9 @@ public class VentanaJuegoController implements Initializable {
                     }
                     actualizarVistaTableroJugador();
                     IdResultadoDisparo.setText("La computadora dispara: " + resultado);
-                    evaluarFinDelJuego();
+                    if (evaluarFinDelJuego()) {
+                        return;
+                    }
                     PauseTransition esperaAntesDeJugador = new PauseTransition(Duration.seconds(1.5));
                     esperaAntesDeJugador.setOnFinished(ev -> {
                         IdResultadoDisparo.setText("");
@@ -897,7 +902,6 @@ public class VentanaJuegoController implements Initializable {
         rectBarco.setVisible(false);
         rectBarco.setDisable(true);
         barcosColocados.add(rectBarco);
-
         Barco barco = new Barco(tamaño);
         boolean colocado = tableroJugador.colocarBarco(barco, fila, columna, horizontal);
 
@@ -939,7 +943,7 @@ public class VentanaJuegoController implements Initializable {
     }
 
     public enum ResultadoJuego {
-        VICTORIA_JUGADOR, VICTORIA_COMPUTADORA, EMPATE,CONTINUAR
+        VICTORIA_JUGADOR, VICTORIA_COMPUTADORA, EMPATE, CONTINUAR
     }
 
     private ResultadoJuego verificarEstadoFinal() {
@@ -965,22 +969,24 @@ public class VentanaJuegoController implements Initializable {
         return ResultadoJuego.CONTINUAR;
     }
 
-    private void evaluarFinDelJuego() {
+    private boolean evaluarFinDelJuego() {
         ResultadoJuego resultado = verificarEstadoFinal();
-
         switch (resultado) {
             case VICTORIA_JUGADOR:
+                Reproductor.detenerMusicaSiActiva();
                 cambiarAEscenaFinal("ganador");
-                break;
+                return true;
             case VICTORIA_COMPUTADORA:
+                Reproductor.detenerMusicaSiActiva();
                 cambiarAEscenaFinal("perdedor");
-                break;
+                return true;
             case EMPATE:
+                Reproductor.detenerMusicaSiActiva();
                 cambiarAEscenaFinal("empate");
-                break;
+                return true;
             case CONTINUAR:
             default:
-                break;
+                return false;
         }
     }
 
@@ -990,9 +996,17 @@ public class VentanaJuegoController implements Initializable {
             Parent root = loader.load();
             VentanaFinalJuegoController controlador = loader.getController();
             controlador.configurarFinal(resultado);
-            Stage stage = (Stage) IdResultadoDisparo.getScene().getWindow();
+            Stage stage = stagePrincipal;
             stage.setScene(new Scene(root));
+            stage.sizeToScene();
+            stage.centerOnScreen();
+            stage.show();
         } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
+
+    public void setStagePrincipal(Stage stage) {
+        this.stagePrincipal = stage;
     }
 }
