@@ -131,5 +131,10 @@
       <Label layoutX="290.0" layoutY="122.0" text="DESTRUCTORES" />
       <Label layoutX="443.0" layoutY="122.0" text="CRUCEROS" />
       <Label layoutX="587.0" layoutY="122.0" text="ACORAZADO" />
+      <Label fx:id="txtMensajePista" alignment="CENTER" layoutX="802.0" layoutY="381.0" prefHeight="63.0" prefWidth="190.0" text="PISTAS">
+         <font>
+            <Font size="15.0" />
+         </font>
+      </Label>
    </children>
 </AnchorPane>
