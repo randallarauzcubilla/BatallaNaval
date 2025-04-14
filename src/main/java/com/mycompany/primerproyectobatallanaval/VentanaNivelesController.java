@@ -27,14 +27,12 @@ public class VentanaNivelesController implements Initializable {
     private Button ButtonFácil;
     @FXML
     private TextField txtNombreUsuario;
-
-    private String nombreUsuario; // Para almacenar el nombre del usuario
+    private String nombreUsuario;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // Crear un binding que es true si el campo de nombre está vacío
         BooleanBinding nombreVacio = txtNombreUsuario.textProperty().isEmpty();
-
         // Deshabilitar los botones de nivel si el campo está vacío
         ButtonFácil.disableProperty().bind(nombreVacio);
         ButtonNormal.disableProperty().bind(nombreVacio);
@@ -44,16 +42,12 @@ public class VentanaNivelesController implements Initializable {
     @FXML
     private void OnButtonVolverInicioPrecionado(ActionEvent event) {
         try {
-            // Cargar el archivo FXML de la ventana de inicio
             FXMLLoader loader = new FXMLLoader(getClass().getResource("VentanaInicio.fxml"));
             Parent root = loader.load();
-
-            // Cambiar la escena al contenido de la ventana de inicio
             Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle("Battleship - Pantalla de Inicio");
             stage.show();
-
         } catch (IOException e) {
             System.err.println("Error al cargar VentanaInicio.fxml:");
             e.printStackTrace();
@@ -81,7 +75,6 @@ public class VentanaNivelesController implements Initializable {
             stage.setTitle("Battleship - Juego");
             stage.centerOnScreen();
             stage.show();
-
         } catch (IOException e) {
             System.err.println("Error al cargar VentanaJuego.fxml:");
             e.printStackTrace();
@@ -99,18 +92,21 @@ public class VentanaNivelesController implements Initializable {
     @FXML
     private void OnButtonNivelDifícilPrecionado(ActionEvent event) {
         guardarNombreUsuario();
+         UsuarioData.setNivel(3);
         cambiarAVentanaJuego(event);
     }
 
     @FXML
     private void OnButtonNivelNormalPrecionado(ActionEvent event) {
         guardarNombreUsuario();
+         UsuarioData.setNivel(2);
         cambiarAVentanaJuego(event);
     }
 
     @FXML
     private void OnButtonNivelFácilPrecionado(ActionEvent event) {
         guardarNombreUsuario();
+         UsuarioData.setNivel(1);
         cambiarAVentanaJuego(event);
     }
 }
