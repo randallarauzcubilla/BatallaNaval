@@ -1,12 +1,15 @@
 package com.mycompany.primerproyectobatallanaval;
+
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+
 /**
  *
  * @author Randall AC
  */
 public class Reproductor {
 
+    private double volumen = 1.0;
     private static Reproductor instance;
     private static MediaPlayer mediaPlayer;
 
@@ -53,6 +56,7 @@ public class Reproductor {
     }
 
     public void setVolumen(double volumen) {
+        this.volumen = volumen;
         if (mediaPlayer != null) {
             mediaPlayer.setVolume(volumen);
         }
@@ -64,6 +68,13 @@ public class Reproductor {
             mediaPlayer.dispose();
             mediaPlayer = null;
             instance = null;
+        }
+    }
+
+    public void PlayUnaVez() {
+        if (mediaPlayer != null && mediaPlayer.getStatus() != MediaPlayer.Status.PLAYING) {
+            mediaPlayer.setCycleCount(1);
+            mediaPlayer.play();
         }
     }
 }
