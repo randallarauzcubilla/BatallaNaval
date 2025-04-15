@@ -113,6 +113,7 @@ public class VentanaJuegoController implements Initializable {
     private Label txtMensajePista;
     private List<Barco> barcosMarcadosComoHundidosComputadora = new ArrayList<>();
     private final List<Barco> barcosMarcadosComoHundidosJugador = new ArrayList<>();
+
     /**
      * Initializes the controller class.
      *
@@ -335,7 +336,9 @@ public class VentanaJuegoController implements Initializable {
     @FXML
     private void OnBtnComenzarPartida(ActionEvent event) {
         Reproductor.detenerMusicaSiActiva();
-        Reproductor.getInstance(getClass().getResource("/Musica/BatallaNavalMusic.mp3").toExternalForm(), 1).PlayOnBucle();
+        Reproductor musicaBatalla = Reproductor.getInstance(getClass().getResource("/Musica/BatallaNavalMusic.mp3").toExternalForm(), 1);
+        musicaBatalla.PlayOnBucle();
+        musicaBatalla.setVolumen(0.4);
         if (tableroJugador.getBarcos().size() != tableroJugador.getMaxBarcos()) {
             IdMensajeUsuario.setText("¡Debes colocar todos tus barcos antes de comenzar!");
             return;
