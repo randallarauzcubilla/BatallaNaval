@@ -83,8 +83,10 @@ public class Tablero {
                 if (posicion[0] == fila && posicion[1] == columna) {
                     barco.marcarParteTocada(i);
                     if (barco.estaHundido()) {
+                         EfectoSonido.reproducir("/Musica/BarcoDestruido.mp3");
                         return "¡Hundido!";
                     }
+                     EfectoSonido.reproducir("/Musica/ImpactoDeBarco.mp3");
                     return "¡Averiado!";
                 }
             }
